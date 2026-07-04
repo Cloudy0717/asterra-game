@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://pw5g748v2si3"]
+
+[ext_resource type="Script" uid="uid://dgqel4xy1x52i" path="res://scenes/game.gd" id="1_game_gd"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player_tscn"]
+[ext_resource type="PackedScene" path="res://scenes/main_menu.tscn" id="3_main_menu_tscn"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud_tscn"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="5_dialogue_box_tscn"]
+[ext_resource type="PackedScene" path="res://scenes/naming_screen.tscn" id="6_naming_screen_tscn"]
+[ext_resource type="PackedScene" path="res://scenes/inventory_screen.tscn" id="7_inventory_screen_tscn"]
+[ext_resource type="PackedScene" path="res://scenes/status_screen.tscn" id="8_status_screen_tscn"]
+[ext_resource type="PackedScene" path="res://scenes/settings_screen.tscn" id="9_settings_screen_tscn"]
+[ext_resource type="PackedScene" path="res://scenes/battle_screen.tscn" id="10_battle_screen_tscn"]
+[ext_resource type="Script" path="res://scenes/shop_screen.gd" id="11_shop_screen_gd"]
+
+[node name="Game" type="Node2D" unique_id=154074228]
+script = ExtResource("1_game_gd")
+
+[node name="Maps" type="Node2D" parent="." unique_id=602656154]
+
+[node name="Cabin" type="Node2D" parent="Maps" unique_id=383549592]
+
+[node name="Plains" type="Node2D" parent="Maps" unique_id=72953565]
+
+[node name="GuildHall" type="Node2D" parent="Maps"]
+
+[node name="StoneClawPass" type="Node2D" parent="Maps"]
+
+[node name="Player" parent="." unique_id=1484426125 instance=ExtResource("2_player_tscn")]
+position = Vector2(160, 160)
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=2060135789]
+zoom = Vector2(2, 2)
+position_smoothing_enabled = true
+
+[node name="UI" type="Node" parent="." unique_id=1139829918]
+
+[node name="MainMenu" parent="UI" unique_id=990947847 instance=ExtResource("3_main_menu_tscn")]
+
+[node name="HUD" parent="UI" unique_id=1073196593 instance=ExtResource("4_hud_tscn")]
+
+[node name="DialogueBox" parent="UI" unique_id=2121745733 instance=ExtResource("5_dialogue_box_tscn")]
+
+[node name="NamingScreen" parent="UI" unique_id=1542852184 instance=ExtResource("6_naming_screen_tscn")]
+
+[node name="InventoryScreen" parent="UI" unique_id=1460195884 instance=ExtResource("7_inventory_screen_tscn")]
+
+[node name="StatusScreen" parent="UI" unique_id=1139296340 instance=ExtResource("8_status_screen_tscn")]
+
+[node name="SettingsScreen" parent="UI" unique_id=303396026 instance=ExtResource("9_settings_screen_tscn")]
+
+[node name="BattleScreen" parent="UI" unique_id=1307565277 instance=ExtResource("10_battle_screen_tscn")]
+
+[node name="ShopScreen" type="CanvasLayer" parent="UI"]
+script = ExtResource("11_shop_screen_gd")
+
+[node name="FadeLayer" type="CanvasLayer" parent="UI" unique_id=527084200]
+layer = 20
+
+[node name="FadeRect" type="ColorRect" parent="UI/FadeLayer" unique_id=2002983285]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
