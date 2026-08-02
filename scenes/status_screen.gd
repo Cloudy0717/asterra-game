@@ -489,22 +489,30 @@ func render_status():
 	exp_bar.max_value = p.max_exp
 	exp_bar.value = p.exp
 
-	var weapon_bonus = p.equipment.weapon.value if p.equipment.weapon else 0
-	var armor_bonus = p.equipment.armor.value if p.equipment.armor else 0
-	var acc_bonus = p.equipment.accessory.value if p.equipment.accessory else 0
-
-	atk_lbl.text = str(p.base_atk) + " (+" + str(weapon_bonus) + ")"
-	def_lbl.text = str(p.base_def) + " (+" + str(armor_bonus + acc_bonus) + ")"
+	var bonus_atk = GameState.get_total_atk() - p.base_atk
+	var bonus_def = GameState.get_total_def() - p.base_def
+	atk_lbl.text = str(p.base_atk) + " (+" + str(bonus_atk) + ")"
+	def_lbl.text = str(p.base_def) + " (+" + str(bonus_def) + ")"
 	rep_lbl.text = str(p.reputation)
 
 	# Equipment display
-	_update_equip_label(equip_weapon_lbl, p.equipment.weapon)
-	_update_equip_label(equip_armor_lbl, p.equipment.armor)
-	_update_equip_label(equip_accessory_lbl, p.equipment.accessory)
+	_update_equip_label(equip_weapon_lbl, p.equipment.weapon, "atk")
+	_update_equip_label(equip_armor_lbl, p.equipment.armor, "def")
+	_update_equip_label(equip_accessory_lbl, p.equipment.accessory, "both")
 
-func _update_equip_label(lbl: Label, item):
+func _update_equip_label(lbl: Label, item: Variant, type: String) -> void:
 	if item:
-		lbl.text = item.name + " (+" + str(item.value) + ")"
+		var bonus_str = ""
+		if type == "atk" and item.has("atk_bonus"): bonus_str = "+" + str(item.atk_bonus)
+		elif type == "def" and item.has("def_bonus"): bonus_str = "+" + str(item.def_bonus)
+		elif type == "both":
+			if item.has("atk_bonus"): bonus_str += "ATK+" + str(item.atk_bonus) + " "
+			if item.has("def_bonus"): bonus_str += "DEF+" + str(item.def_bonus)
+		
+		if bonus_str != "":
+			lbl.text = item.name + " (" + bonus_str.strip_edges() + ")"
+		else:
+			lbl.text = item.name
 		lbl.modulate = Color("#ffd700")
 	else:
 		lbl.text = "— Empty —"

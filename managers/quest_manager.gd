@@ -142,6 +142,41 @@ func trigger_mentor_dialogue():
 			}
 		]
 		emit_signal("show_dialogue", steps, null)
+	elif state == 13:
+		var steps = [
+			{ "speaker": "Veteran Mercenary", "avatar": "⚔️", "text": "Ah, just the person I was looking for! The Guild Master just posted a high-priority commission." },
+			{ "speaker": "Veteran Mercenary", "avatar": "⚔️", "text": "The old Stone Claw Mine has been overrun by some weird monsters, and there are rumors of a Giant Stone Golem in the depths." },
+			{ "speaker": GameState.get_player().name, "avatar": "protagonist", "text": "A Stone Golem? That sounds dangerous..." },
+			{ "speaker": "Veteran Mercenary", "avatar": "⚔️", "text": "It is. But the ore down there is incredibly valuable. The Guild is offering a hefty reward to anyone who can clear it out." },
+			{
+				"speaker": "Veteran Mercenary",
+				"avatar": "⚔️",
+				"text": "Are you up for the challenge? I can authorize your entry to the mine.",
+				"choices": [
+					{ "text": "Accept the Mine Investigation", "action": func(): accept_mine_quest() },
+					{ "text": "I need to prepare first", "action": func(): dialogue_box_ref.close_dialogue() }
+				]
+			}
+		]
+		emit_signal("show_dialogue", steps, null)
+	elif state == 14:
+		var steps = [
+			{ "speaker": "Veteran Mercenary", "avatar": "⚔️", "text": "The entrance to the Stone Claw Mine is on the east side of Stone Claw Pass. Be careful down there!" }
+		]
+		emit_signal("show_dialogue", steps, null)
+	elif state == 15:
+		var steps = [
+			{ "speaker": "Veteran Mercenary", "avatar": "⚔️", "text": "By the gods, you actually did it! You defeated the Stone Golem!" },
+			{ "speaker": "Veteran Mercenary", "avatar": "⚔️", "text": "The Guild Master is extremely impressed. Here is your bonus!" },
+			{ "speaker": "System", "avatar": "✨", "text": "Received Bonus: 250 Gold, +100 Mercenary Reputation!" }
+		]
+		emit_signal("show_dialogue", steps, func():
+			GameState.modify_gold(250)
+			GameState.get_player().reputation += 100
+			GameState.get_quest().state = 16
+			hud_ref.update_hud()
+			GameState.save_game()
+		)
 	else:
 		var idle = [
 			[{ "speaker": "Veteran Mercenary", "avatar": "⚔️", "text": "Garrick's the name. If you ever need backup on a job, I'm your man." }],
@@ -162,6 +197,145 @@ func accept_escort_quest():
 		{ "speaker": "System", "avatar": "✨", "text": "Quest Accepted: Caravan Escort to Stone Claw Pass.\nObjective: Head north through the plains gate to Stone Claw Pass. Goblins have been reported in the area." }
 	]
 	emit_signal("show_dialogue", steps, null)
+
+func accept_mine_quest():
+	dialogue_box_ref.close_dialogue()
+	GameState.get_quest().state = 14
+	hud_ref.update_hud()
+	GameState.save_game()
+
+	var steps = [
+		{ "speaker": "Veteran Mercenary", "avatar": "⚔️", "text": "Excellent! Head to Stone Claw Pass and look for the mine entrance on the east side." },
+		{ "speaker": "System", "avatar": "✨", "text": "Quest Accepted: Stone Claw Mine Investigation.\nObjective: Enter the mine at Stone Claw Pass and defeat the Giant Stone Golem." }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func trigger_blacksmith_dialogue():
+	var steps = [
+		{ "speaker": "Blacksmith", "avatar": "🔨", "text": "Hah! You look too soft to swing a real sword, kid. Come back when you've got some meat on your bones." }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func trigger_broadcast_horn_dialogue():
+	var steps = [
+		{ "speaker": "Broadcast Horn", "avatar": "📢", "text": "🔊 [b]TOWN EMERGENCY ALERT BROADCAST[/b]\nAttention Adventurers! High-rank bounties active in Stone Claw Pass.\nAll E-Rank mercenaries report to Guild Receptionist for duty." }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func trigger_bartender_dialogue():
+	var choices = [
+		{ "text": "Buy Ale (+20 HP) - 10 Gold", "action": Callable(self, "_on_buy_ale_selected") },
+		{ "text": "Ask for Rumours", "action": Callable(self, "_on_rumours_selected") },
+		{ "text": "Leave", "action": func(): dialogue_box_ref.close_dialogue() }
+	]
+	var steps = [
+		{ "speaker": "Bartender", "avatar": "🍺", "text": "Welcome to the Mercenary Tavern! What can I get for you?", "choices": choices }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func _on_buy_ale_selected():
+	dialogue_box_ref.close_dialogue()
+	if GameState.get_player().gold >= 10:
+		GameState.modify_gold(-10)
+		GameState.modify_hp(20)
+		var msg = [{ "speaker": "Bartender", "avatar": "🍺", "text": "Here's a cold one! Restored 20 HP. Stay safe out there." }]
+		emit_signal("show_dialogue", msg, null)
+	else:
+		var msg = [{ "speaker": "Bartender", "avatar": "🍺", "text": "Not enough gold, pal. Ale doesn't pour itself!" }]
+		emit_signal("show_dialogue", msg, null)
+
+func _on_rumours_selected():
+	dialogue_box_ref.close_dialogue()
+	var msg = [{ "speaker": "Bartender", "avatar": "🍺", "text": "Rumour has it a giant Golem sleeps deep in the mines. Only those with forged steel blades stand a chance against its stone armor." }]
+	emit_signal("show_dialogue", msg, null)
+
+func trigger_hans_dialogue():
+	var steps = [
+		{ "speaker": "Merchant Hans", "avatar": "🎒", "text": "Ah, an adventurer! I lost my supply crate while escaping wolves in the Southern Forest." },
+		{ "speaker": "Merchant Hans", "avatar": "🎒", "text": "If you find any Vital Herbs in the forest, bring them to Clara nearby or appraise them at the recycled materials desk for good coin!" }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func trigger_clara_dialogue():
+	var steps = [
+		{ "speaker": "Clara", "avatar": "🌿", "text": "Hello! I collect medicinal plants for the guild infirmary. The Southern Forest has rare Vital Herbs." },
+		{ "speaker": "Clara", "avatar": "🌿", "text": "You can take any herbs or monster parts you gather to the Material Appraiser downstairs for gold & reputation points!" }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func trigger_honor_wall_dialogue():
+	var steps = [
+		{ "speaker": "Honor Wall", "avatar": "🏆", "text": "🏆 [b]ASTERRA GUILD HALL OF FAME[/b]\nRank S: Valerius the Dragon Slayer\nRank A: Lady Seraphina, Archmage\nRank B: Garrick the Iron Mercenary" }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func trigger_apprentice_pip_dialogue():
+	var steps = [
+		{ "speaker": "Apprentice Pip", "avatar": "🔨", "text": "Phew! Master Blacksmith works me hard. Make sure to test your weapons on the Training Dummy behind me!" }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func trigger_mage_lily_dialogue():
+	var steps = [
+		{ "speaker": "Mage Lily", "avatar": "🧙‍♀️", "text": "I'm studying the magical energy cores inside stone golems. If you ever slay one, hold onto its core!" }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func trigger_ranger_tom_dialogue():
+	var steps = [
+		{ "speaker": "Ranger Tom", "avatar": "🏹", "text": "Keep your eyes peeled in the plains! Wolf pelts and herbs fetch good coin at the appraisal counter downstairs." }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func trigger_information_broker_dialogue():
+	var choices = [
+		{ "text": "Buy Golem Weakness Guide (50 Gold)", "action": Callable(self, "_on_buy_golem_guide_selected") },
+		{ "text": "Leave", "action": func(): dialogue_box_ref.close_dialogue() }
+	]
+	var steps = [
+		{ "speaker": "Shadow Broker", "avatar": "🕵️", "text": "Shh... You look like you're searching for secrets. I deal in rare intel for a price.", "choices": choices }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func _on_buy_golem_guide_selected():
+	dialogue_box_ref.close_dialogue()
+	if GameState.get_player().gold >= 50:
+		GameState.modify_gold(-50)
+		var msg = [{ "speaker": "Shadow Broker", "avatar": "🕵️", "text": "🔒 [b]SECRET MANUAL UNLOCKED[/b]\nThe Giant Golem has heavy physical armor. Craft a [b]Golem Crusher[/b] or use magical attacks to bypass its defense!" }]
+		emit_signal("show_dialogue", msg, null)
+	else:
+		var msg = [{ "speaker": "Shadow Broker", "avatar": "🕵️", "text": "Information isn't free, kid. Come back when you've got 50 Gold." }]
+		emit_signal("show_dialogue", msg, null)
+
+func trigger_bard_orpheus_dialogue():
+	var choices = [
+		{ "text": "Play Town BGM", "action": Callable(self, "_on_bard_town_bgm") },
+		{ "text": "Play Battle Theme", "action": Callable(self, "_on_bard_battle_bgm") },
+		{ "text": "Play Mine BGM", "action": Callable(self, "_on_bard_mine_bgm") },
+		{ "text": "Listen to Legend", "action": Callable(self, "_on_bard_legend") },
+		{ "text": "Leave", "action": func(): dialogue_box_ref.close_dialogue() }
+	]
+	var steps = [
+		{ "speaker": "Bard Orpheus", "avatar": "🎵", "text": "Greetings, traveller! Welcome to the Tavern. Would you like to request a tune?", "choices": choices }
+	]
+	emit_signal("show_dialogue", steps, null)
+
+func _on_bard_town_bgm():
+	dialogue_box_ref.close_dialogue()
+	Audio.play_bgm()
+
+func _on_bard_battle_bgm():
+	dialogue_box_ref.close_dialogue()
+	Audio.play_bgm()
+
+func _on_bard_mine_bgm():
+	dialogue_box_ref.close_dialogue()
+	Audio.play_bgm()
+
+func _on_bard_legend():
+	dialogue_box_ref.close_dialogue()
+	var msg = [{ "speaker": "Bard Orpheus", "avatar": "🎵", "text": "🎶 'Long ago, when Asterra was young, the ancient Stone Golem guarded the deep ores of the mountain...' 🎶" }]
+	emit_signal("show_dialogue", msg, null)
 
 func trigger_board_dialogue():
 	var state = GameState.get_quest().state

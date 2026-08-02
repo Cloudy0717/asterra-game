@@ -71,6 +71,7 @@ var _inventory = [
 		"desc": "A worn-out rusty sword. Better than nothing.",
 		"effect": "+5 Attack",
 		"value": 5,
+		"atk_bonus": 5,
 		"qty": 1,
 		"equipped": true,
 		"skill": {"name": "Rusty Scratch", "mp_cost": 2, "damage_mult": 1.2, "description": "A wild rusty scratch — 1.2x damage"}
@@ -83,6 +84,7 @@ var _inventory = [
 		"desc": "A patched piece of cloth. Offers minor physical protection.",
 		"effect": "+4 Defense",
 		"value": 4,
+		"def_bonus": 4,
 		"qty": 1,
 		"equipped": true
 	},
@@ -129,6 +131,21 @@ var _settings = {
 
 func _ready():
 	check_saved_game()
+	_sync_equipment()
+
+func _sync_equipment():
+	_player.equipment.weapon = null
+	_player.equipment.armor = null
+	_player.equipment.accessory = null
+	for item in _inventory:
+		if item.get("equipped", false):
+			var type = item.get("type", "")
+			if type == Constants.ITEM_TYPE_WEAPON:
+				_player.equipment.weapon = item
+			elif type == Constants.ITEM_TYPE_ARMOR:
+				_player.equipment.armor = item
+			elif type == "accessory":
+				_player.equipment.accessory = item
 
 func get_player() -> Dictionary:
 	return _player
@@ -178,12 +195,55 @@ func has_item(item_id: String) -> bool:
 			return true
 	return false
 
-func get_item_count(item_id: String) -> int:
-	var count = 0
-	for item in _inventory:
+func consume_item(item_id: String, count: int = 1) -> void:
+	var remaining = count
+	for idx in range(_inventory.size() - 1, -1, -1):
+		var item = _inventory[idx]
 		if item.id == item_id:
-			count += item.get("qty", 1)
-	return count
+			var qty = item.get("qty", 1)
+			if qty <= remaining:
+				remaining -= qty
+				_inventory.remove_at(idx)
+			else:
+				item.qty -= remaining
+				remaining = 0
+			if remaining <= 0:
+				break
+	emit_signal("hud_updated")
+
+var _storage = []
+
+func get_storage() -> Array:
+	return _storage
+
+func deposit_to_storage(inv_index: int) -> bool:
+	if inv_index >= 0 and inv_index < _inventory.size():
+		var item = _inventory[inv_index]
+		if item.get("equipped", false):
+			_show_toast("Cannot store equipped item!", "⚠️")
+			return false
+		_inventory.remove_at(inv_index)
+		# Add to storage
+		for st_item in _storage:
+			if st_item.id == item.id and item.get("type") == Constants.ITEM_TYPE_POTION:
+				st_item.qty += item.get("qty", 1)
+				emit_signal("hud_updated")
+				save_game()
+				return true
+		_storage.append(item.duplicate(true))
+		emit_signal("hud_updated")
+		save_game()
+		return true
+	return false
+
+func withdraw_from_storage(st_index: int) -> bool:
+	if st_index >= 0 and st_index < _storage.size():
+		var item = _storage[st_index]
+		_storage.remove_at(st_index)
+		add_item(item)
+		save_game()
+		return true
+	return false
 
 var _location = {
 	"map": "cabin",
@@ -235,6 +295,7 @@ func load_game() -> bool:
 		var saved_location = file.get_value("location", "data", {})
 		_deep_merge(_location, saved_location)
 		
+		_sync_equipment()
 		emit_signal("hud_updated")
 		return true
 	return false
@@ -310,19 +371,7 @@ func add_exp(amount: int):
 	emit_signal("hud_updated")
 	save_game()
 
-func get_total_atk() -> int:
-	var bonus = 0
-	if _player.equipment.weapon:
-		bonus += _player.equipment.weapon.value
-	return _player.base_atk + bonus
 
-func get_total_def() -> int:
-	var bonus = 0
-	if _player.equipment.armor:
-		bonus += _player.equipment.armor.value
-	if _player.equipment.accessory:
-		bonus += _player.equipment.accessory.value
-	return _player.base_def + bonus
 
 func use_item(index: int) -> String:
 	if index < 0 or index >= _inventory.size():
@@ -376,6 +425,22 @@ func unequip_slot(slot: String):
 		_remove_item_bonuses(item)
 		emit_signal("hud_updated")
 		save_game()
+
+func get_total_atk() -> int:
+	var total = _player.base_atk
+	if _player.equipment.weapon and _player.equipment.weapon.has("atk_bonus"):
+		total += _player.equipment.weapon.atk_bonus
+	if _player.equipment.accessory and _player.equipment.accessory.has("atk_bonus"):
+		total += _player.equipment.accessory.atk_bonus
+	return total
+
+func get_total_def() -> int:
+	var total = _player.base_def
+	if _player.equipment.armor and _player.equipment.armor.has("def_bonus"):
+		total += _player.equipment.armor.def_bonus
+	if _player.equipment.accessory and _player.equipment.accessory.has("def_bonus"):
+		total += _player.equipment.accessory.def_bonus
+	return total
 
 # ========================= SIDE QUEST SYSTEM =========================
 

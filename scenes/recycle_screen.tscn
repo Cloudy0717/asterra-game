@@ -1,0 +1,108 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/recycle_screen.gd" id="1_script"]
+
+[node name="RecycleScreen" type="CanvasLayer"]
+layer = 15
+script = ExtResource("1_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.705882)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(320, 220)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.901961, 0.784314, 0.960784, 1)
+theme_override_font_sizes/font_size = 14
+text = "💎 Material Recycling & Appraisal"
+
+[node name="GoldLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.854902, 0.647059, 0.12549, 1)
+theme_override_font_sizes/font_size = 12
+text = "💰 0"
+
+[node name="CloseBtn" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer/HeaderHBox"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.956863, 0.443137, 0.380392, 1)
+text = "X"
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ContentHBox" type="HBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/ContentHBox/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.854902, 0.741176, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "Select Material to Appraise"
+
+[node name="ItemsList" type="VBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer/ContentHBox/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DetailPanel" type="PanelContainer" parent="CenterContainer/PanelContainer/VBoxContainer/ContentHBox"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer/ContentHBox/DetailPanel"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/ContentHBox/DetailPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843137, 0, 1)
+theme_override_font_sizes/font_size = 12
+text = "Name"
+
+[node name="DescLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/ContentHBox/DetailPanel/VBoxContainer"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 10
+text = "Description"
+autowrap_mode = 2
+
+[node name="PriceLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/ContentHBox/DetailPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.701961, 1, 0.701961, 1)
+theme_override_font_sizes/font_size = 10
+text = "Appraisal Value:
+- 💰 +15 Gold
+- ✨ +3 Rep"
+
+[node name="SellBtn" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer/ContentHBox/DetailPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.180392, 0.8, 0.443137, 1)
+text = "SELL & APPRAISE"

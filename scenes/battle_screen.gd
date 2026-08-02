@@ -469,7 +469,7 @@ func _process_buffs(is_player: bool) -> bool:
 	var target = GameState.get_player() if is_player else enemy_data
 	var buffs = target.get("buffs", {})
 	var card = player_card if is_player else enemy_card
-	var name = target.get("name", "Player" if is_player else "Enemy")
+	var target_name = target.get("name", "Player" if is_player else "Enemy")
 	var is_dead = false
 	
 	var active_keys = buffs.keys()
@@ -482,7 +482,7 @@ func _process_buffs(is_player: bool) -> bool:
 				else:
 					target["hp"] -= dmg
 				
-				_log("[color=#aed581]☠️ Poison ticks for [b]" + str(dmg) + "[/b] damage on [b]" + name + "[/b]![/color]")
+				_log("[color=#aed581]☠️ Poison ticks for [b]" + str(dmg) + "[/b] damage on [b]" + target_name + "[/b]![/color]")
 				FloatingText.spawn(str(dmg), card.global_position + Vector2(card.size.x * 0.5, 0), FloatingText.Type.DAMAGE)
 				BattleVFX.hit_flash(card)
 				
@@ -492,7 +492,7 @@ func _process_buffs(is_player: bool) -> bool:
 			buffs[key] -= 1
 			if buffs[key] <= 0:
 				buffs.erase(key)
-				_log("[color=#90a4ae]" + name + " recovered from " + key + "![/color]")
+				_log("[color=#90a4ae]" + target_name + " recovered from " + key + "![/color]")
 				
 	if is_player:
 		_refresh_player_ui()

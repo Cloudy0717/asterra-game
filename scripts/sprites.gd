@@ -20,7 +20,7 @@ func init_sprites():
 	create_monsters()
 
 func create_monsters():
-	var monster_ids = ["slime_battle", "wolf_battle", "goblin_battle", "goblin_chief_battle"]
+	var monster_ids = ["slime_battle", "wolf_battle", "goblin_battle", "goblin_chief_battle", "cave_bat", "rock_spider", "stone_golem"]
 	for m_id in monster_ids:
 		var tex = load_texture_from_file("res://assets/monsters/" + m_id + ".png")
 		if tex:
@@ -136,7 +136,7 @@ func draw_rect_outline(image: Image, rect: Rect2i, color: Color):
 # --- Procedural Generators ---
 func create_tiles():
 	var sz = TILE_SIZE
-	var tile_names = ["grass", "flower", "dirt", "wood_floor", "brick_wall", "roof", "stone", "tree"]
+	var tile_names = ["grass", "flower", "dirt", "wood_floor", "brick_wall", "roof", "stone", "tree", "cave_floor", "cave_wall", "stairs_down"]
 
 	for t_name in tile_names:
 		var tex = load_texture_from_file("res://assets/tiles/" + t_name + ".png")
@@ -240,7 +240,12 @@ func create_tiles():
 
 func create_objects():
 	var sz = TILE_SIZE
-	var obj_names = ["bed", "table", "fireplace", "bulletin_board", "herb", "vital_herb", "guild_counter", "tree"]
+	var obj_names = [
+		"bed", "table", "fireplace", "bulletin_board", "herb", "vital_herb",
+		"guild_counter", "tree", "copper_ore", "iron_ore", "stairs_down", "stairs_up",
+		"broadcast_horn", "party_board", "bar_counter", "training_dummy", "storage_chest",
+		"weapon_rack", "honor_wall", "potion_shelf"
+	]
 
 	for o_name in obj_names:
 		var tex = load_texture_from_file("res://assets/objects/" + o_name + ".png")
@@ -324,6 +329,20 @@ func create_objects():
 		tree_img.fill_rect(Rect2i(14, 22, 4, 10), Color("#5d4037"))
 		tree_img.fill_rect(Rect2i(15, 22, 2, 10), Color("#4e342e"))
 		objects["tree"] = create_texture_from_image(tree_img)
+
+	if not objects.has("stairs_down"):
+		var sd_img = Image.create(sz, sz, true, Image.FORMAT_RGBA8)
+		sd_img.fill(Color("#1a1a1a"))
+		for r in range(4):
+			sd_img.fill_rect(Rect2i(4, r * 7 + 2, 24, 4), Color("#424242").darkened(r * 0.15))
+		objects["stairs_down"] = create_texture_from_image(sd_img)
+
+	if not objects.has("stairs_up"):
+		var su_img = Image.create(sz, sz, true, Image.FORMAT_RGBA8)
+		su_img.fill(Color("#1a1a1a"))
+		for r in range(4):
+			su_img.fill_rect(Rect2i(4, r * 7 + 2, 24, 4), Color("#757575").lightened(r * 0.1))
+		objects["stairs_up"] = create_texture_from_image(su_img)
 
 func create_characters():
 	var sz = TILE_SIZE
@@ -410,77 +429,16 @@ func create_characters():
 	goblin_img.fill_rect(Rect2i(55, 23, 2, 6), Color("#1b5e20"))
 	characters["goblin"] = create_texture_from_image(goblin_img)
 
-	# 6. Guild NPCs (simple 32x32 down-facing sprites)
-	var sz2 = sz
-	# Receptionist (blue dress, brown hair)
-	var recp_img = Image.create(sz2, sz2, true, Image.FORMAT_RGBA8)
-	recp_img.fill(Color(0, 0, 0, 0))
-	draw_ellipse(recp_img, Vector2i(16, 28), 10, 4, Color(0, 0, 0, 0.25))
-	recp_img.fill_rect(Rect2i(11, 20, 2, 6), Color("#4e342e"))
-	recp_img.fill_rect(Rect2i(19, 20, 2, 6), Color("#4e342e"))
-	recp_img.fill_rect(Rect2i(10, 25, 12, 7), Color("#1565c0"))
-	recp_img.fill_rect(Rect2i(10, 25, 12, 1), Color("#0d47a1"))
-	recp_img.fill_rect(Rect2i(10, 30, 12, 1), Color("#0d47a1"))
-	recp_img.fill_rect(Rect2i(10, 12, 12, 9), Color("#ffe0b2"))
-	recp_img.fill_rect(Rect2i(9, 10, 14, 4), Color("#5d4037"))
-	recp_img.fill_rect(Rect2i(9, 13, 2, 6), Color("#5d4037"))
-	recp_img.fill_rect(Rect2i(21, 13, 2, 6), Color("#5d4037"))
-	recp_img.fill_rect(Rect2i(13, 15, 2, 2), Color("#1a1a1a"))
-	recp_img.fill_rect(Rect2i(17, 15, 2, 2), Color("#1a1a1a"))
-	recp_img.fill_rect(Rect2i(12, 18, 8, 1), Color("#ef9a9a"))
-	outline_sprite(recp_img)
-	characters["receptionist"] = create_texture_from_image(recp_img)
-
-	# Garrick (rugged veteran, grey hair, brown armor, red cape)
-	var garrick_img = Image.create(sz2, sz2, true, Image.FORMAT_RGBA8)
-	garrick_img.fill(Color(0, 0, 0, 0))
-	draw_ellipse(garrick_img, Vector2i(16, 28), 10, 4, Color(0, 0, 0, 0.25))
-	garrick_img.fill_rect(Rect2i(22, 1, 5, 10), Color("#8d0000"))
-	garrick_img.fill_rect(Rect2i(22, 1, 5, 2), Color("#660000"))
-	garrick_img.fill_rect(Rect2i(11, 21, 2, 6), Color("#3e2723"))
-	garrick_img.fill_rect(Rect2i(19, 21, 2, 6), Color("#3e2723"))
-	garrick_img.fill_rect(Rect2i(10, 26, 12, 2), Color("#4e342e"))
-	garrick_img.fill_rect(Rect2i(9, 12, 14, 11), Color("#6d4c41"))
-	garrick_img.fill_rect(Rect2i(9, 12, 14, 1), Color("#4e342e"))
-	garrick_img.fill_rect(Rect2i(9, 21, 14, 1), Color("#4e342e"))
-	garrick_img.fill_rect(Rect2i(9, 12, 1, 10), Color("#4e342e"))
-	garrick_img.fill_rect(Rect2i(22, 12, 1, 10), Color("#4e342e"))
-	garrick_img.fill_rect(Rect2i(12, 16, 2, 1), Color("#5d4037"))
-	garrick_img.fill_rect(Rect2i(10, 13, 3, 3), Color("#5d4037"))
-	garrick_img.fill_rect(Rect2i(19, 13, 3, 3), Color("#5d4037"))
-	garrick_img.fill_rect(Rect2i(10, 3, 12, 9), Color("#ffcc80"))
-	garrick_img.fill_rect(Rect2i(9, 1, 14, 4), Color("#78909c"))
-	garrick_img.fill_rect(Rect2i(9, 4, 2, 6), Color("#78909c"))
-	garrick_img.fill_rect(Rect2i(21, 4, 2, 6), Color("#78909c"))
-	garrick_img.fill_rect(Rect2i(13, 6, 2, 2), Color("#1a1a1a"))
-	garrick_img.fill_rect(Rect2i(17, 6, 2, 2), Color("#1a1a1a"))
-	garrick_img.fill_rect(Rect2i(13, 9, 6, 1), Color("#8d6e63"))
-	garrick_img.fill_rect(Rect2i(11, 8, 2, 1), Color("#b71c1c"))
-	outline_sprite(garrick_img)
-	characters["garrick"] = create_texture_from_image(garrick_img)
-
-	# Shopkeeper (green vest, white shirt, merchant)
-	var shop_img = Image.create(sz2, sz2, true, Image.FORMAT_RGBA8)
-	shop_img.fill(Color(0, 0, 0, 0))
-	draw_ellipse(shop_img, Vector2i(16, 28), 10, 4, Color(0, 0, 0, 0.25))
-	shop_img.fill_rect(Rect2i(11, 20, 2, 6), Color("#3e2723"))
-	shop_img.fill_rect(Rect2i(19, 20, 2, 6), Color("#3e2723"))
-	shop_img.fill_rect(Rect2i(10, 25, 12, 7), Color("#ffffff"))
-	shop_img.fill_rect(Rect2i(10, 12, 12, 13), Color("#2e7d32"))
-	shop_img.fill_rect(Rect2i(10, 12, 12, 1), Color("#1b5e20"))
-	shop_img.fill_rect(Rect2i(10, 23, 12, 1), Color("#1b5e20"))
-	shop_img.fill_rect(Rect2i(10, 12, 1, 12), Color("#1b5e20"))
-	shop_img.fill_rect(Rect2i(21, 12, 1, 12), Color("#1b5e20"))
-	shop_img.fill_rect(Rect2i(13, 16, 6, 1), Color("#fdd835"))
-	shop_img.fill_rect(Rect2i(11, 3, 10, 9), Color("#ffe0b2"))
-	shop_img.fill_rect(Rect2i(10, 1, 12, 4), Color("#4e342e"))
-	shop_img.fill_rect(Rect2i(10, 4, 2, 6), Color("#4e342e"))
-	shop_img.fill_rect(Rect2i(20, 4, 2, 6), Color("#4e342e"))
-	shop_img.fill_rect(Rect2i(13, 6, 2, 2), Color("#1a1a1a"))
-	shop_img.fill_rect(Rect2i(17, 6, 2, 2), Color("#1a1a1a"))
-	shop_img.fill_rect(Rect2i(14, 9, 4, 1), Color("#d47a6a"))
-	outline_sprite(shop_img)
-	characters["shopkeeper"] = create_texture_from_image(shop_img)
+	# 6. Guild NPCs & Characters
+	var npc_list = [
+		"receptionist", "garrick", "shopkeeper", "blacksmith", "bartender",
+		"appraiser", "merchant_hans", "clara", "apprentice_pip", "mage_lily",
+		"ranger_tom", "information_broker", "bard_orpheus"
+	]
+	for npc in npc_list:
+		var tex = load_texture_from_file("res://assets/npc_" + npc + ".png")
+		if tex:
+			characters[npc] = tex
 
 	# 7. Portraits
 	create_portraits()

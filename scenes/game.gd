@@ -15,6 +15,10 @@ extends Node2D
 var game_over_screen: CanvasLayer
 var pause_menu: CanvasLayer
 var quest_log_screen: CanvasLayer
+var forge_screen: CanvasLayer
+var recycle_screen: CanvasLayer
+var party_board_screen: CanvasLayer
+var storage_screen: CanvasLayer
 var map_manager: Node
 var quest_manager: Node
 var encounter_manager: Node
@@ -43,6 +47,23 @@ func _ready():
 	quest_log_screen.name = "QuestLogScreen"
 	$UI.add_child(quest_log_screen)
 	quest_log_screen.hide_screen()
+	
+	forge_screen = load("res://scenes/forge_screen.tscn").instantiate()
+	forge_screen.name = "ForgeScreen"
+	$UI.add_child(forge_screen)
+	forge_screen.forge_closed.connect(func(): pass)
+
+	recycle_screen = load("res://scenes/recycle_screen.tscn").instantiate()
+	recycle_screen.name = "RecycleScreen"
+	$UI.add_child(recycle_screen)
+
+	party_board_screen = load("res://scenes/party_board_screen.tscn").instantiate()
+	party_board_screen.name = "PartyBoardScreen"
+	$UI.add_child(party_board_screen)
+
+	storage_screen = load("res://scenes/storage_screen.tscn").instantiate()
+	storage_screen.name = "StorageScreen"
+	$UI.add_child(storage_screen)
 
 	fade_rect.color.a = 0.0
 
@@ -146,16 +167,35 @@ func _on_map_changing(map_name):
 				encounter_manager.spawn_quest_goblins(target)
 				encounter_manager.spawn_boss_goblin_chief(target, Vector2(16 * 32 + 16, 5 * 32 + 16))
 		"south_forest":
-			map_manager.configure_camera_limits(camera, 20, 16)
-			hud.show_region_banner("South Forest (南方森林)")
+			map_manager.configure_camera_limits(camera, 20, 20)
+			hud.show_region_banner("Southern Forest (南部森林)")
 			if map_manager.vital_herbs_list.is_empty():
 				map_manager.spawn_vital_herbs()
-		"guild":
+		"mine_b1":
 			map_manager.configure_camera_limits(camera, 16, 12)
+			hud.show_region_banner("Stone Claw Mine - B1 (石爪礦坑 B1)")
+			if encounter_manager.mine_b1_enemies.is_empty():
+				encounter_manager.spawn_mine_b1_enemies(target)
+		"mine_b2":
+			map_manager.configure_camera_limits(camera, 16, 12)
+			hud.show_region_banner("Stone Claw Mine - B2 (石爪礦坑 B2)")
+			if encounter_manager.mine_b2_enemies.is_empty():
+				encounter_manager.spawn_mine_b2_enemies(target)
+		"mine_b3":
+			map_manager.configure_camera_limits(camera, 12, 10)
+			hud.show_region_banner("Stone Claw Mine - Depths (石爪礦坑 深處)")
+			if not is_instance_valid(encounter_manager.golem_boss_ref):
+				encounter_manager.spawn_golem_boss(target, Vector2(6 * 32 + 16, 5 * 32 + 16))
+		"guild", "guild_1f":
+			map_manager.configure_camera_limits(camera, 24, 18)
+			hud.show_region_banner("Mercenary Guild - 1F (佣兵公會 一樓大廳)")
 			if GameState.get_quest().state == 9:
 				GameState.get_quest().state = 10
 				hud.update_hud()
 				GameState.save_game()
+		"guild_2f":
+			map_manager.configure_camera_limits(camera, 20, 14)
+			hud.show_region_banner("Mercenary Guild - 2F (佣兵公會 二樓酒館)")
 		"south_forest":
 			map_manager.configure_camera_limits(camera, 20, 16)
 			if encounter_manager.forest_wolves_list.is_empty():
@@ -167,7 +207,10 @@ func is_ui_blocked() -> bool:
 	return main_menu.visible or dialogue_box.visible or naming_screen.visible or \
 		   inventory_screen.visible or status_screen.visible or settings_screen.visible or \
 		   shop_screen.visible or encounter_manager.in_battle or \
-		   (quest_log_screen and quest_log_screen.visible)
+		   (quest_log_screen and quest_log_screen.visible) or \
+		   (forge_screen and forge_screen.visible) or \
+		   (recycle_screen and recycle_screen.visible) or \
+		   (party_board_screen and party_board_screen.visible)
 
 func _input(event: InputEvent):
 	if naming_screen.visible:
@@ -219,11 +262,19 @@ func _physics_process(_delta):
 		if py == 11 and px == 16:
 			transition_manager.transition_to("cabin", Vector2(6 * 32 + 16, 7 * 32 + 16), "up")
 		if py == 11 and px == 4:
-			transition_manager.transition_to("guild", Vector2(8 * 32 + 16, 10 * 32 + 16), "up")
+			transition_manager.transition_to("guild_1f", Vector2(12 * 32 + 16, 16 * 32 + 16), "up")
 		if py == 0 and px == 16:
 			transition_manager.transition_to("stone_claw", Vector2(10 * 32 + 16, 10 * 32 + 16), "up")
 		if py == 31 and px == 16:
 			transition_manager.transition_to("south_forest", Vector2(10 * 32 + 16, 1 * 32 + 16), "up")
+	elif map_manager.current_map in ["guild", "guild_1f"]:
+		if py >= 17 and (px == 11 or px == 12):
+			transition_manager.transition_to("plains", Vector2(4 * 32 + 16, 12 * 32 + 16), "down")
+		if py <= 1 and px >= 21:
+			transition_manager.transition_to("guild_2f", Vector2(16 * 32 + 16, 2 * 32 + 16), "down")
+	elif map_manager.current_map == "guild_2f":
+		if py <= 1 and px >= 17:
+			transition_manager.transition_to("guild_1f", Vector2(20 * 32 + 16, 2 * 32 + 16), "down")
 
 		if not encounter_manager.in_battle:
 			for slime in encounter_manager.slimes_list:
@@ -246,6 +297,12 @@ func _physics_process(_delta):
 	elif map_manager.current_map == "stone_claw":
 		if py == 11 and px == 10:
 			transition_manager.transition_to("plains", Vector2(16 * 32 + 16, 1 * 32 + 16), "down")
+		# Mine entrance (right side of map, quest-gated)
+		if py == 5 and px >= 18 and GameState.get_quest().state >= 14:
+			transition_manager.transition_to("mine_b1", Vector2(8 * 32 + 16, 1 * 32 + 16), "down")
+		elif py == 5 and px >= 18 and GameState.get_quest().state < 14:
+			var msg = [{ "speaker": "System", "avatar": "🚫", "text": "A collapsed mine entrance. It looks like it could be cleared, but you'd need a reason to go in..." }]
+			GameState.emit_signal("show_dialogue", msg, null)
 
 		if not encounter_manager.in_battle:
 			if is_instance_valid(encounter_manager.boss_ref) and player.position.distance_to(encounter_manager.boss_ref.position) < 32:
@@ -255,6 +312,44 @@ func _physics_process(_delta):
 					if is_instance_valid(goblin) and player.position.distance_to(goblin.position) < 22:
 						encounter_manager.start_battle(goblin)
 						break
+	elif map_manager.current_map == "mine_b1":
+		# Exit back to Stone Claw
+		if py == 0 and px == 8:
+			transition_manager.transition_to("stone_claw", Vector2(18 * 32 + 16, 5 * 32 + 16), "down")
+		# Stairs down to B2
+		if py >= 10 and px == 12:
+			transition_manager.transition_to("mine_b2", Vector2(3 * 32 + 16, 1 * 32 + 16), "down")
+
+		if not encounter_manager.in_battle:
+			for bat in encounter_manager.mine_b1_enemies:
+				if is_instance_valid(bat) and player.position.distance_to(bat.position) < 22:
+					encounter_manager.start_battle(bat)
+					break
+
+	elif map_manager.current_map == "mine_b2":
+		# Stairs up to B1
+		if py == 0 and px == 3:
+			transition_manager.transition_to("mine_b1", Vector2(12 * 32 + 16, 10 * 32 + 16), "up")
+		# Stairs down to B3
+		if py >= 10 and px == 8:
+			transition_manager.transition_to("mine_b3", Vector2(3 * 32 + 16, 1 * 32 + 16), "down")
+
+		if not encounter_manager.in_battle:
+			for spider in encounter_manager.mine_b2_enemies:
+				if is_instance_valid(spider) and player.position.distance_to(spider.position) < 22:
+					encounter_manager.start_battle(spider)
+					break
+
+	elif map_manager.current_map == "mine_b3":
+		# Stairs up to B2
+		if py == 0 and px == 3:
+			transition_manager.transition_to("mine_b2", Vector2(8 * 32 + 16, 10 * 32 + 16), "up")
+
+		# BOSS trigger (center altar)
+		if not encounter_manager.in_battle and is_instance_valid(encounter_manager.golem_boss_ref):
+			if player.position.distance_to(Vector2(6 * 32 + 16, 5 * 32 + 16)) < 48:
+				encounter_manager.start_battle(encounter_manager.golem_boss_ref)
+
 	elif map_manager.current_map == "south_forest":
 		if py == 0 and px == 10:
 			transition_manager.transition_to("plains", Vector2(16 * 32 + 16, 30 * 32 + 16), "up")
@@ -267,11 +362,8 @@ func _physics_process(_delta):
 
 func handle_action_press():
 	if dialogue_box.visible:
-		dialogue_box.on_dialogue_clicked()
-	else:
-		handle_interaction()
+		return
 
-func handle_interaction():
 	if map_manager.current_map == "cabin":
 		var lina_pos = Vector2(6 * 32 + 16, 4 * 32 + 16)
 		if player.position.distance_to(lina_pos) < 45:
@@ -295,6 +387,11 @@ func handle_interaction():
 			return
 
 	elif map_manager.current_map == "plains":
+		var horn_pos = Vector2(2 * 32 + 16, 11 * 32 + 16)
+		if player.position.distance_to(horn_pos) < 50:
+			quest_manager.trigger_broadcast_horn_dialogue()
+			return
+
 		var board_pos = Vector2(18 * 32 + 16, 13 * 32 + 16)
 		if player.position.distance_to(board_pos) < 45:
 			quest_manager.trigger_board_dialogue()
@@ -316,29 +413,125 @@ func handle_interaction():
 					bush.collect()
 				return
 
-	elif map_manager.current_map == "guild":
-		var receptionist_pos = Vector2(5 * 32 + 16, 2 * 32 - 4)
+	elif map_manager.current_map in ["guild", "guild_1f"]:
+		# Receptionist
+		var receptionist_pos = Vector2(10 * 32 + 32, 2 * 32 - 4)
 		if player.position.distance_to(receptionist_pos) < 50:
 			quest_manager.trigger_guild_dialogue()
 			return
 
-		var garrick_pos = Vector2(11 * 32 + 16, 4 * 32 + 8)
-		if player.position.distance_to(garrick_pos) < 45:
-			quest_manager.trigger_mentor_dialogue()
-			return
-
-		var board_pos = Vector2(2 * 32 + 16, 2 * 32 + 16)
+		# Bulletin Board
+		var board_pos = Vector2(4 * 32 + 16, 2 * 32 + 16)
 		if player.position.distance_to(board_pos) < 40:
 			quest_manager.trigger_board_dialogue()
 			return
 
-		var shopkeeper_pos = Vector2(12 * 32 + 32, 8 * 32 - 4)
+		# Honor Wall
+		var honor_pos = Vector2(2 * 32 + 16, 2 * 32 + 16)
+		if player.position.distance_to(honor_pos) < 40:
+			quest_manager.trigger_honor_wall_dialogue()
+			return
+
+		# Mage Lily
+		var lily_pos = Vector2(3 * 32 + 16, 5 * 32 + 8)
+		if player.position.distance_to(lily_pos) < 45:
+			quest_manager.trigger_mage_lily_dialogue()
+			return
+
+		# Training Dummy (Damage Test)
+		var dummy_pos = Vector2(6 * 32 + 16, 14 * 32 + 16)
+		if player.position.distance_to(dummy_pos) < 45:
+			var total_atk = GameState.get_total_atk()
+			var p = GameState.get_player()
+			var bonus = total_atk - p.base_atk
+			var msg = [{ "speaker": "Training Dummy", "avatar": "🎯", "text": "🎯 [b]TRAINING DUMMY HIT![/b]\nBase ATK: " + str(p.base_atk) + " | Gear Bonus: +" + str(bonus) + "\nTotal Damage Output: [b][color=#ffeb3b]" + str(total_atk) + "[/color][/b]" }]
+			GameState.emit_signal("show_dialogue", msg, null)
+			return
+
+		# Apprentice Pip
+		var pip_pos = Vector2(5 * 32 + 16, 12 * 32 + 8)
+		if player.position.distance_to(pip_pos) < 45:
+			quest_manager.trigger_apprentice_pip_dialogue()
+			return
+
+		# Blacksmith
+		var blacksmith_pos = Vector2(3 * 32 + 16, 12 * 32 - 4)
+		if player.position.distance_to(blacksmith_pos) < 50:
+			if GameState.get_quest().state >= 10:
+				forge_screen.show_screen()
+			else:
+				quest_manager.trigger_blacksmith_dialogue()
+			return
+
+		# Party Board
+		var party_pos = Vector2(16 * 32 + 16, 2 * 32 + 16)
+		if player.position.distance_to(party_pos) < 45:
+			party_board_screen.show_screen()
+			return
+
+		# Storage Chest
+		var storage_pos = Vector2(18 * 32 + 16, 2 * 32 + 16)
+		if player.position.distance_to(storage_pos) < 45:
+			storage_screen.show_screen()
+			return
+
+		# Ranger Tom
+		var tom_pos = Vector2(17 * 32 + 16, 4 * 32 + 8)
+		if player.position.distance_to(tom_pos) < 45:
+			quest_manager.trigger_ranger_tom_dialogue()
+			return
+
+		# Shopkeeper
+		var shopkeeper_pos = Vector2(17 * 32 + 32, 6 * 32 - 4)
 		if player.position.distance_to(shopkeeper_pos) < 50:
 			if GameState.get_quest().state >= 10:
 				shop_screen.show_screen()
 			else:
 				var msg = [{ "speaker": "Shopkeeper", "avatar": "🛒", "text": "Welcome! Feel free to browse once you've registered with the guild." }]
 				GameState.emit_signal("show_dialogue", msg, null)
+			return
+
+		# Appraiser
+		var appraiser_pos = Vector2(17 * 32 + 32, 12 * 32 - 4)
+		if player.position.distance_to(appraiser_pos) < 50:
+			recycle_screen.show_screen()
+			return
+
+	elif map_manager.current_map == "guild_2f":
+		# Bartender
+		var bartender_pos = Vector2(5 * 32 + 32, 2 * 32 - 4)
+		if player.position.distance_to(bartender_pos) < 50:
+			quest_manager.trigger_bartender_dialogue()
+			return
+
+		# Bard Orpheus
+		var bard_pos = Vector2(11 * 32 + 16, 2 * 32 + 8)
+		if player.position.distance_to(bard_pos) < 45:
+			quest_manager.trigger_bard_orpheus_dialogue()
+			return
+
+		# Information Broker
+		var broker_pos = Vector2(2 * 32 + 16, 10 * 32 + 8)
+		if player.position.distance_to(broker_pos) < 45:
+			quest_manager.trigger_information_broker_dialogue()
+			return
+
+		# Garrick
+		var garrick_pos = Vector2(4 * 32 + 16, 6 * 32 + 16)
+		if player.position.distance_to(garrick_pos) < 50:
+			quest_manager.trigger_mentor_dialogue()
+			return
+
+		# Merchant Hans
+		var hans_pos = Vector2(12 * 32 + 16, 6 * 32 + 16)
+		if player.position.distance_to(hans_pos) < 50:
+			quest_manager.trigger_hans_dialogue()
+			return
+
+		# Clara
+		var clara_pos = Vector2(8 * 32 + 16, 9 * 32 + 16)
+		if player.position.distance_to(clara_pos) < 50:
+			quest_manager.trigger_clara_dialogue()
 			return
 
 	elif map_manager.current_map == "stone_claw":
@@ -353,6 +546,13 @@ func handle_interaction():
 		for herb in map_manager.vital_herbs_list:
 			if is_instance_valid(herb) and player.position.distance_to(herb.position) < 24:
 				herb.collect()
+
+	elif map_manager.current_map in ["mine_b1", "mine_b2", "mine_b3"]:
+		for ore in map_manager.ore_veins_list:
+			if is_instance_valid(ore) and player.position.distance_to(ore.position) < 28:
+				if ore.has_method("collect"):
+					ore.collect()
+				return
 
 	elif map_manager.current_map == "south_forest":
 		var sign_pos = Vector2(8 * 32 + 16, 1 * 32 + 24)
@@ -425,6 +625,8 @@ func load_saved_game():
 			"cabin": map_manager.configure_camera_limits(camera, 12, 10)
 			"plains": map_manager.configure_camera_limits(camera, 32, 32)
 			"stone_claw": map_manager.configure_camera_limits(camera, 20, 12)
+			"guild", "guild_1f": map_manager.configure_camera_limits(camera, 24, 18)
+			"guild_2f": map_manager.configure_camera_limits(camera, 20, 14)
 			_: map_manager.configure_camera_limits(camera, 20, 20)
 
 		if GameState.get_quest().state == 2:
@@ -459,6 +661,12 @@ func on_battle_ended(won: bool, rewards: Dictionary):
 				GameState.get_quest().state = 9
 				GameState.modify_gold(60)
 				GameState.add_exp(80)
+			GameState.save_game()
+
+		if rewards.get("type") == "stone_golem" and GameState.get_quest().state == 14:
+			GameState.get_quest().state = 15
+			GameState.modify_gold(150)
+			GameState.add_exp(300)
 			GameState.save_game()
 
 		encounter_manager.cleanup_dead()
