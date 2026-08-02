@@ -46,14 +46,16 @@ func _physics_process(delta):
 		velocity = input_vector * current_speed
 		is_walking = true
 		
+		var anim_step_time = 0.08 if is_sprinting else 0.12
 		anim_time += delta
-		if anim_time > 0.15:
+		if anim_time >= anim_step_time:
 			anim_frame = (anim_frame + 1) % 4
 			anim_time = 0.0
 	else:
 		velocity = Vector2.ZERO
 		is_walking = false
 		anim_frame = 0
+		anim_time = 0.0
 		
 	move_and_slide()
 	update_sprite_frame()
@@ -68,13 +70,13 @@ func update_sprite_frame():
 	var row = 0
 	match dir:
 		"down": row = 0
-		"up": row = 1
+		"right": row = 1
 		"left": row = 2
-		"right": row = 3
+		"up": row = 3
 	
 	var col = 0
 	if is_walking:
-		var cycle = [0, 1, 0, 2]
+		var cycle = [1, 0, 2, 0] # Step left, Idle, Step right, Idle
 		col = cycle[anim_frame]
 	
 	sprite.frame = row * 3 + col

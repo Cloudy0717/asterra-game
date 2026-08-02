@@ -5,18 +5,29 @@ var current_map = "cabin"
 var cabin_map_node: Node2D
 var plains_map_node: Node2D
 var guild_map_node: Node2D
+var guild_1f_map_node: Node2D
+var guild_2f_map_node: Node2D
 var stone_claw_map_node: Node2D
 var south_forest_map_node: Node2D
+var mine_b1_map_node: Node2D
+var mine_b2_map_node: Node2D
+var mine_b3_map_node: Node2D
 
 var cabin_solids = []
 var plains_solids = []
 var guild_solids = []
+var guild_1f_solids = []
+var guild_2f_solids = []
 var stone_claw_solids = []
 var south_forest_solids = []
+var mine_b1_solids = []
+var mine_b2_solids = []
+var mine_b3_solids = []
 
 var herbs_list = []
 var vital_herbs_list = []
 var fruit_bushes_list = []
+var ore_veins_list = []
 
 var terrain_tileset: TileSet
 const TILE_TYPES = ["grass", "flower", "dirt", "wood_floor", "brick_wall", "roof", "stone"]
@@ -28,6 +39,7 @@ const BOARD_SCENE = preload("res://scenes/bulletin_board.tscn")
 const HERB_SCENE = preload("res://scenes/herb.tscn")
 const VITAL_HERB_SCENE = preload("res://scenes/vital_herb.tscn")
 const FRUIT_BUSH_SCENE = preload("res://scenes/fruit_bush.tscn")
+const ORE_VEIN_SCENE = preload("res://scenes/ore_vein.tscn")
 
 func _create_terrain_tileset() -> TileSet:
 	var ts = TileSet.new()
@@ -69,13 +81,30 @@ func _ready():
 	cabin_map_node = p.get_node("Cabin")
 	plains_map_node = p.get_node("Plains")
 	guild_map_node = p.get_node("GuildHall")
+	guild_1f_map_node = guild_map_node
 	stone_claw_map_node = p.get_node("StoneClawPass")
+
+	guild_2f_map_node = Node2D.new()
+	guild_2f_map_node.name = "Guild2F"
+	p.add_child(guild_2f_map_node)
 
 	south_forest_map_node = Node2D.new()
 	south_forest_map_node.name = "SouthForest"
 	p.add_child(south_forest_map_node)
 
-	for map_node in [cabin_map_node, plains_map_node, guild_map_node, stone_claw_map_node, south_forest_map_node]:
+	mine_b1_map_node = Node2D.new()
+	mine_b1_map_node.name = "MineB1"
+	p.add_child(mine_b1_map_node)
+
+	mine_b2_map_node = Node2D.new()
+	mine_b2_map_node.name = "MineB2"
+	p.add_child(mine_b2_map_node)
+
+	mine_b3_map_node = Node2D.new()
+	mine_b3_map_node.name = "MineB3"
+	p.add_child(mine_b3_map_node)
+
+	for map_node in [cabin_map_node, plains_map_node, guild_map_node, guild_2f_map_node, stone_claw_map_node, south_forest_map_node, mine_b1_map_node, mine_b2_map_node, mine_b3_map_node]:
 		var tml = TileMapLayer.new()
 		tml.name = "Terrain"
 		tml.tile_set = terrain_tileset
@@ -84,8 +113,12 @@ func _ready():
 	build_cabin_map()
 	build_plains_map()
 	build_guild_map()
+	build_guild_2f_map()
 	build_stone_claw_pass_map()
 	build_south_forest_map()
+	build_mine_b1()
+	build_mine_b2()
+	build_mine_b3()
 
 	set_active_map("")
 
@@ -95,8 +128,13 @@ func set_active_map(map_name: String):
 		"cabin": cabin_map_node,
 		"plains": plains_map_node,
 		"guild": guild_map_node,
+		"guild_1f": guild_1f_map_node,
+		"guild_2f": guild_2f_map_node,
 		"stone_claw": stone_claw_map_node,
-		"south_forest": south_forest_map_node
+		"south_forest": south_forest_map_node,
+		"mine_b1": mine_b1_map_node,
+		"mine_b2": mine_b2_map_node,
+		"mine_b3": mine_b3_map_node
 	}
 	for key in map_nodes:
 		var node = map_nodes[key]
@@ -230,6 +268,9 @@ func build_plains_map():
 	board.position = Vector2(18 * 32 + 16, 13 * 32 + 16)
 	plains_map_node.add_child(board)
 
+	# Town Broadcast Horn outside the Guild Entrance
+	spawn_object(plains_map_node, "broadcast_horn", Vector2(2 * 32, 11 * 32), Rect2(0, 0, 32, 32), false)
+
 	var rng_herb = RandomNumberGenerator.new()
 	rng_herb.seed = 999
 	for i in range(6):
@@ -259,9 +300,10 @@ func build_plains_map():
 			fruit_bushes_list.append(bush)
 
 func build_guild_map():
-	var rows = 12
-	var cols = 16
+	var rows = 18
+	var cols = 24
 	guild_solids.resize(rows)
+	guild_1f_solids = guild_solids
 	for r in range(rows):
 		guild_solids[r] = []
 		guild_solids[r].resize(cols)
@@ -273,22 +315,84 @@ func build_guild_map():
 				tile_name = "brick_wall"
 				solid = true
 
-			if r == rows - 1 and c == 8:
+			# Entrance door at bottom center (Cols 11..12)
+			if r == rows - 1 and (c == 11 or c == 12):
 				tile_name = "wood_floor"
 				solid = false
 
 			guild_solids[r][c] = solid
 			spawn_tile(guild_map_node, tile_name, c, r, solid)
 
-	spawn_object(guild_map_node, "guild_counter", Vector2(5 * 32, 2 * 32), Rect2(0, 0, 64, 32), true)
-	spawn_object(guild_map_node, "table", Vector2(11 * 32, 4 * 32), Rect2(0, 0, 32, 32), true)
-	spawn_object(guild_map_node, "table", Vector2(11 * 32, 7 * 32), Rect2(0, 0, 32, 32), true)
-	spawn_object(guild_map_node, "bulletin_board", Vector2(2 * 32, 2 * 32), Rect2(0, 0, 32, 32), false)
-	spawn_object(guild_map_node, "guild_counter", Vector2(12 * 32, 8 * 32), Rect2(0, 0, 64, 32), true)
+	# --- Quad 1 (Top Left): Reception, Commission & Honor ---
+	spawn_object(guild_map_node, "guild_counter", Vector2(10 * 32, 2 * 32), Rect2(0, 0, 64, 32), true)
+	spawn_npc(guild_map_node, "receptionist", Vector2(10 * 32 + 32, 2 * 32 - 4))
+	spawn_object(guild_map_node, "bulletin_board", Vector2(4 * 32, 2 * 32), Rect2(0, 0, 32, 32), false)
+	spawn_object(guild_map_node, "honor_wall", Vector2(2 * 32, 2 * 32), Rect2(0, 0, 32, 32), false)
+	spawn_npc(guild_map_node, "mage_lily", Vector2(3 * 32 + 16, 5 * 32 + 8))
 
-	spawn_npc(guild_map_node, "receptionist", Vector2(5 * 32 + 16, 2 * 32 - 4))
-	spawn_npc(guild_map_node, "garrick", Vector2(11 * 32 + 16, 4 * 32 + 8))
-	spawn_npc(guild_map_node, "shopkeeper", Vector2(12 * 32 + 32, 8 * 32 - 4))
+	# --- Quad 2 (Bottom Left): Smithy & Training Yard ---
+	spawn_object(guild_map_node, "fireplace", Vector2(2 * 32, 11 * 32), Rect2(0, 0, 32, 32), true)
+	spawn_object(guild_map_node, "guild_counter", Vector2(3 * 32, 12 * 32), Rect2(0, 0, 64, 32), true)
+	spawn_npc(guild_map_node, "blacksmith", Vector2(3 * 32 + 16, 12 * 32 - 4))
+	spawn_npc(guild_map_node, "apprentice_pip", Vector2(5 * 32 + 16, 12 * 32 + 8))
+	spawn_object(guild_map_node, "weapon_rack", Vector2(2 * 32, 15 * 32), Rect2(0, 0, 32, 32), true)
+	spawn_object(guild_map_node, "training_dummy", Vector2(6 * 32, 14 * 32), Rect2(0, 0, 32, 32), true)
+
+	# --- Quad 3 (Top Right): Recruitment, Storage & Stairs ---
+	spawn_object(guild_map_node, "party_board", Vector2(16 * 32, 2 * 32), Rect2(0, 0, 32, 32), false)
+	spawn_object(guild_map_node, "storage_chest", Vector2(18 * 32, 2 * 32), Rect2(0, 0, 32, 32), true)
+	spawn_npc(guild_map_node, "ranger_tom", Vector2(17 * 32 + 16, 4 * 32 + 8))
+	spawn_object(guild_map_node, "stairs_up", Vector2(21 * 32, 1 * 32), Rect2(0, 0, 32, 32), false)
+
+	# --- Quad 4 (Bottom Right): Logistics & Appraisal ---
+	spawn_object(guild_map_node, "potion_shelf", Vector2(19 * 32, 5 * 32), Rect2(0, 0, 32, 32), true)
+	spawn_object(guild_map_node, "guild_counter", Vector2(17 * 32, 6 * 32), Rect2(0, 0, 64, 32), true)
+	spawn_npc(guild_map_node, "shopkeeper", Vector2(17 * 32 + 32, 6 * 32 - 4))
+
+	spawn_object(guild_map_node, "guild_counter", Vector2(17 * 32, 12 * 32), Rect2(0, 0, 64, 32), true)
+	spawn_npc(guild_map_node, "appraiser", Vector2(17 * 32 + 32, 12 * 32 - 4))
+
+func build_guild_2f_map():
+	var rows = 14
+	var cols = 20
+	guild_2f_solids.resize(rows)
+	for r in range(rows):
+		guild_2f_solids[r] = []
+		guild_2f_solids[r].resize(cols)
+		for c in range(cols):
+			var tile_name = "wood_floor"
+			var solid = false
+
+			if r == 0 or r == rows - 1 or c == 0 or c == cols - 1:
+				tile_name = "brick_wall"
+				solid = true
+
+			guild_2f_solids[r][c] = solid
+			spawn_tile(guild_2f_map_node, tile_name, c, r, solid)
+
+	# Stairs Down to 1F (Top right corner)
+	spawn_object(guild_2f_map_node, "stairs_down", Vector2(17 * 32, 1 * 32), Rect2(0, 0, 32, 32), false)
+
+	# Bar Counter & Bartender
+	spawn_object(guild_2f_map_node, "bar_counter", Vector2(5 * 32, 2 * 32), Rect2(0, 0, 64, 32), true)
+	spawn_npc(guild_2f_map_node, "bartender", Vector2(5 * 32 + 32, 2 * 32 - 4))
+
+	# Bard Stage (Center Top)
+	spawn_object(guild_2f_map_node, "bulletin_board", Vector2(11 * 32, 2 * 32), Rect2(0, 0, 32, 32), false)
+	spawn_npc(guild_2f_map_node, "bard_orpheus", Vector2(11 * 32 + 16, 2 * 32 + 8))
+
+	# Information Broker (Dark Corner Bottom Left)
+	spawn_npc(guild_2f_map_node, "information_broker", Vector2(2 * 32 + 16, 10 * 32 + 8))
+
+	# Tavern Tables & Quest NPCs
+	spawn_object(guild_2f_map_node, "table", Vector2(4 * 32, 7 * 32), Rect2(0, 0, 32, 32), true)
+	spawn_npc(guild_2f_map_node, "garrick", Vector2(4 * 32 + 16, 6 * 32 + 16))
+
+	spawn_object(guild_2f_map_node, "table", Vector2(12 * 32, 7 * 32), Rect2(0, 0, 32, 32), true)
+	spawn_npc(guild_2f_map_node, "merchant_hans", Vector2(12 * 32 + 16, 6 * 32 + 16))
+
+	spawn_object(guild_2f_map_node, "table", Vector2(8 * 32, 10 * 32), Rect2(0, 0, 32, 32), true)
+	spawn_npc(guild_2f_map_node, "clara", Vector2(8 * 32 + 16, 9 * 32 + 16))
 
 func build_stone_claw_pass_map():
 	var rows = 12
@@ -411,16 +515,19 @@ func spawn_tile(parent_node: Node2D, tile_name: String, c: int, r: int, solid: b
 		body.add_child(shape)
 		parent_node.add_child(body)
 
-func spawn_npc(parent_node: Node2D, npc_key: String, pos: Vector2):
+func spawn_npc(parent_node: Node2D, npc_key: String, pos: Vector2) -> Sprite2D:
 	var sprite = Sprite2D.new()
+	sprite.name = npc_key
 	sprite.texture = Sprites.characters.get(npc_key)
 	sprite.position = pos
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	parent_node.add_child(sprite)
+	return sprite
 
 func spawn_object(parent_node: Node2D, object_name: String, pos: Vector2, rect: Rect2, solid: bool):
 	var sprite = Sprite2D.new()
-	sprite.texture = Sprites.objects[object_name]
+	if Sprites.objects.has(object_name):
+		sprite.texture = Sprites.objects[object_name]
 	sprite.position = pos + rect.size / 2
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	parent_node.add_child(sprite)
@@ -503,7 +610,116 @@ func get_map_node(map_name: String) -> Node2D:
 	match map_name:
 		"cabin": return cabin_map_node
 		"plains": return plains_map_node
-		"guild": return guild_map_node
+		"guild", "guild_1f": return guild_1f_map_node
+		"guild_2f": return guild_2f_map_node
 		"stone_claw": return stone_claw_map_node
 		"south_forest": return south_forest_map_node
+		"mine_b1": return mine_b1_map_node
+		"mine_b2": return mine_b2_map_node
+		"mine_b3": return mine_b3_map_node
 	return null
+
+# ===================== MINE MAPS =====================
+func build_mine_b1():
+	var rows = 12
+	var cols = 16
+	mine_b1_solids.resize(rows)
+	var rng = RandomNumberGenerator.new()
+	rng.seed = 501
+	for r in range(rows):
+		mine_b1_solids[r] = []
+		mine_b1_solids[r].resize(cols)
+		for c in range(cols):
+			var tile_name = "cave_floor"
+			var solid = false
+			if r == 0 or r == rows - 1 or c == 0 or c == cols - 1:
+				tile_name = "cave_wall"
+				solid = true
+			elif not solid:
+				var rand = rng.randf()
+				if rand < 0.12:
+					tile_name = "cave_wall"
+					solid = true
+			mine_b1_solids[r][c] = solid
+			spawn_tile(mine_b1_map_node, tile_name, c, r, solid)
+	# Entrance (top-center) - clear path
+	mine_b1_solids[0][8] = false
+	# Stairs down (bottom-right area)
+	mine_b1_solids[rows - 1][12] = false
+	spawn_object(mine_b1_map_node, "stairs_down", Vector2(12 * 32, (rows - 1) * 32), Rect2(0, 0, 32, 32), false)
+	# Spawn copper ore veins
+	for i in range(5):
+		var ox = (2 + rng.randi() % (cols - 4)) * 32
+		var oy = (2 + rng.randi() % (rows - 4)) * 32
+		@warning_ignore("integer_division")
+		var tx = ox / 32
+		@warning_ignore("integer_division")
+		var ty = oy / 32
+		if not mine_b1_solids[ty][tx]:
+			var ore = ORE_VEIN_SCENE.instantiate()
+			ore.ore_type = "copper"
+			ore.position = Vector2(ox + 16, oy + 16)
+			mine_b1_map_node.add_child(ore)
+			ore_veins_list.append(ore)
+
+func build_mine_b2():
+	var rows = 12
+	var cols = 16
+	mine_b2_solids.resize(rows)
+	var rng = RandomNumberGenerator.new()
+	rng.seed = 502
+	for r in range(rows):
+		mine_b2_solids[r] = []
+		mine_b2_solids[r].resize(cols)
+		for c in range(cols):
+			var tile_name = "cave_floor"
+			var solid = false
+			if r == 0 or r == rows - 1 or c == 0 or c == cols - 1:
+				tile_name = "cave_wall"
+				solid = true
+			elif not solid:
+				var rand = rng.randf()
+				if rand < 0.15:
+					tile_name = "cave_wall"
+					solid = true
+			mine_b2_solids[r][c] = solid
+			spawn_tile(mine_b2_map_node, tile_name, c, r, solid)
+	# Stairs up (top-left)
+	mine_b2_solids[0][3] = false
+	# Stairs down to B3 (bottom-center)
+	mine_b2_solids[rows - 1][8] = false
+	spawn_object(mine_b2_map_node, "stairs_down", Vector2(8 * 32, (rows - 1) * 32), Rect2(0, 0, 32, 32), false)
+	# Spawn iron ore veins
+	for i in range(4):
+		var ox = (2 + rng.randi() % (cols - 4)) * 32
+		var oy = (2 + rng.randi() % (rows - 4)) * 32
+		@warning_ignore("integer_division")
+		var tx = ox / 32
+		@warning_ignore("integer_division")
+		var ty = oy / 32
+		if not mine_b2_solids[ty][tx]:
+			var ore = ORE_VEIN_SCENE.instantiate()
+			ore.ore_type = "iron"
+			ore.position = Vector2(ox + 16, oy + 16)
+			mine_b2_map_node.add_child(ore)
+			ore_veins_list.append(ore)
+
+func build_mine_b3():
+	var rows = 10
+	var cols = 12
+	mine_b3_solids.resize(rows)
+	for r in range(rows):
+		mine_b3_solids[r] = []
+		mine_b3_solids[r].resize(cols)
+		for c in range(cols):
+			var tile_name = "cave_floor"
+			var solid = false
+			if r == 0 or r == rows - 1 or c == 0 or c == cols - 1:
+				tile_name = "cave_wall"
+				solid = true
+			mine_b3_solids[r][c] = solid
+			spawn_tile(mine_b3_map_node, tile_name, c, r, solid)
+	# Stairs up (top-left)
+	mine_b3_solids[0][3] = false
+	# Boss altar (center) - visual marker
+	spawn_object(mine_b3_map_node, "bulletin_board", Vector2(6 * 32, 5 * 32), Rect2(0, 0, 32, 32), false)

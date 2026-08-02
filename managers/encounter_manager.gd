@@ -4,7 +4,10 @@ var slimes_list = []
 var wolves_list = []
 var goblins_list = []
 var forest_wolves_list = []
+var mine_b1_enemies = []
+var mine_b2_enemies = []
 var boss_ref = null
+var golem_boss_ref = null
 var in_battle = false
 
 signal battle_started(enemy_node, config)
@@ -12,6 +15,9 @@ signal battle_started(enemy_node, config)
 const WOLF_SCENE = preload("res://scenes/wolf.tscn")
 const GOBLIN_SCENE = preload("res://scenes/goblin.tscn")
 const SLIME_SCENE = preload("res://scenes/slime.tscn")
+const CAVE_BAT_SCENE = preload("res://scenes/cave_bat.tscn")
+const ROCK_SPIDER_SCENE = preload("res://scenes/rock_spider.tscn")
+const STONE_GOLEM_SCENE = preload("res://scenes/stone_golem.tscn")
 
 var player_ref: Node2D
 
@@ -131,6 +137,41 @@ func spawn_quest_goblins(parent_node: Node2D):
 		parent_node.add_child(goblin)
 		goblins_list.append(goblin)
 
+func spawn_mine_b1_enemies(parent_node: Node2D):
+	for e in mine_b1_enemies:
+		if is_instance_valid(e): e.queue_free()
+	mine_b1_enemies.clear()
+
+	var points = [Vector2(5*32, 5*32), Vector2(10*32, 2*32), Vector2(12*32, 8*32), Vector2(2*32, 10*32)]
+	for pt in points:
+		var bat = CAVE_BAT_SCENE.instantiate()
+		bat.position = pt
+		bat.player_ref = player_ref
+		parent_node.add_child(bat)
+		mine_b1_enemies.append(bat)
+
+func spawn_mine_b2_enemies(parent_node: Node2D):
+	for e in mine_b2_enemies:
+		if is_instance_valid(e): e.queue_free()
+	mine_b2_enemies.clear()
+
+	var points = [Vector2(6*32, 6*32), Vector2(12*32, 3*32), Vector2(4*32, 10*32)]
+	for pt in points:
+		var spider = ROCK_SPIDER_SCENE.instantiate()
+		spider.position = pt
+		spider.player_ref = player_ref
+		parent_node.add_child(spider)
+		mine_b2_enemies.append(spider)
+
+func spawn_golem_boss(parent_node: Node2D, pos: Vector2):
+	if is_instance_valid(golem_boss_ref):
+		golem_boss_ref.queue_free()
+	
+	var golem = STONE_GOLEM_SCENE.instantiate()
+	golem.position = pos
+	parent_node.add_child(golem)
+	golem_boss_ref = golem
+
 func start_battle(target_node):
 	in_battle = true
 	var config = target_node.get_battle_config()
@@ -149,6 +190,12 @@ func cleanup_dead():
 	for i in range(forest_wolves_list.size() - 1, -1, -1):
 		if not is_instance_valid(forest_wolves_list[i]):
 			forest_wolves_list.remove_at(i)
+	for i in range(mine_b1_enemies.size() - 1, -1, -1):
+		if not is_instance_valid(mine_b1_enemies[i]):
+			mine_b1_enemies.remove_at(i)
+	for i in range(mine_b2_enemies.size() - 1, -1, -1):
+		if not is_instance_valid(mine_b2_enemies[i]):
+			mine_b2_enemies.remove_at(i)
 
 func get_respawn_timer(map_name: String) -> float:
 	if map_name == "plains" and wolves_list.size() < 2:
