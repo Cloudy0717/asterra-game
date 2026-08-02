@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/status_screen.tscn" id="8_status_screen_tscn"]
 [ext_resource type="PackedScene" path="res://scenes/settings_screen.tscn" id="9_settings_screen_tscn"]
 [ext_resource type="PackedScene" path="res://scenes/battle_screen.tscn" id="10_battle_screen_tscn"]
-[ext_resource type="Script" path="res://scenes/shop_screen.gd" id="11_shop_screen_gd"]
+[ext_resource type="Script" uid="uid://cwb6fpj45s8pk" path="res://scenes/shop_screen.gd" id="11_shop_screen_gd"]
 
 [node name="Game" type="Node2D" unique_id=154074228]
 script = ExtResource("1_game_gd")
@@ -21,9 +21,9 @@ script = ExtResource("1_game_gd")
 
 [node name="Plains" type="Node2D" parent="Maps" unique_id=72953565]
 
-[node name="GuildHall" type="Node2D" parent="Maps"]
+[node name="GuildHall" type="Node2D" parent="Maps" unique_id=108142053]
 
-[node name="StoneClawPass" type="Node2D" parent="Maps"]
+[node name="StoneClawPass" type="Node2D" parent="Maps" unique_id=1796032812]
 
 [node name="Player" parent="." unique_id=1484426125 instance=ExtResource("2_player_tscn")]
 position = Vector2(160, 160)
@@ -50,7 +50,7 @@ position_smoothing_enabled = true
 
 [node name="BattleScreen" parent="UI" unique_id=1307565277 instance=ExtResource("10_battle_screen_tscn")]
 
-[node name="ShopScreen" type="CanvasLayer" parent="UI"]
+[node name="ShopScreen" type="CanvasLayer" parent="UI" unique_id=1310116827]
 script = ExtResource("11_shop_screen_gd")
 
 [node name="FadeLayer" type="CanvasLayer" parent="UI" unique_id=527084200]

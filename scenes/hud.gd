@@ -3,6 +3,7 @@ extends CanvasLayer
 signal btn_action_pressed
 signal btn_inventory_pressed
 signal btn_status_pressed
+signal btn_quest_pressed
 signal btn_menu_pressed
 
 var hp_bar: ProgressBar
@@ -183,9 +184,26 @@ func setup_ui():
 	quest_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	quest_vbox.add_child(quest_label)
 
+	# --- Bottom Action Bar Background ---
+	var btn_bg = ColorRect.new()
+	btn_bg.position = Vector2(0, 530)
+	btn_bg.custom_minimum_size = Vector2(800, 60)
+	btn_bg.color = Color(0, 0, 0, 0.55)
+	btn_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var btn_bg_style = StyleBoxFlat.new()
+	btn_bg_style.bg_color = Color(0, 0, 0, 0.55)
+	btn_bg_style.corner_radius_top_left = 8
+	btn_bg_style.corner_radius_top_right = 8
+	var btn_bg_panel = PanelContainer.new()
+	btn_bg_panel.position = Vector2(0, 530)
+	btn_bg_panel.custom_minimum_size = Vector2(800, 60)
+	btn_bg_panel.add_theme_stylebox_override("panel", btn_bg_style)
+	btn_bg_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(btn_bg_panel)
+
 	# --- Bottom-Right Action Buttons ---
 	var btn_hbox = HBoxContainer.new()
-	btn_hbox.position = Vector2(340, 540)
+	btn_hbox.position = Vector2(340, 538)
 	btn_hbox.custom_minimum_size = Vector2(440, 44)
 	btn_hbox.alignment = BoxContainer.ALIGNMENT_END
 	root.add_child(btn_hbox)
@@ -204,6 +222,11 @@ func setup_ui():
 	btn_stat.text = "[C] Status"
 	btn_stat.pressed.connect(func(): emit_signal("btn_status_pressed"))
 	btn_hbox.add_child(btn_stat)
+
+	var btn_qst = Button.new()
+	btn_qst.text = "[Q] Quests"
+	btn_qst.pressed.connect(func(): emit_signal("btn_quest_pressed"))
+	btn_hbox.add_child(btn_qst)
 	
 	var btn_menu = Button.new()
 	btn_menu.text = "[Esc] Menu"
@@ -211,7 +234,7 @@ func setup_ui():
 	btn_hbox.add_child(btn_menu)
 
 func update_hud():
-	var p = GameState.player
+	var p = GameState.get_player()
 	name_label.text = p.name
 	rank_label.text = "  (" + p.rank + ")"
 	
@@ -227,13 +250,13 @@ func update_hud():
 	rep_label.text = str(p.reputation) + " Rep"
 	
 	var quest_desc = ""
-	match GameState.quest.state:
+	match GameState.get_quest().state:
 		0:
 			quest_desc = "Talk to your sister Lina inside the cabin."
 		1:
 			quest_desc = "Go outside the cabin and inspect the Bulletin Board."
 		2:
-			quest_desc = "Commission: Defeat Slimes (" + str(GameState.quest.slimes_killed) + "/" + str(GameState.quest.slimes_required) + ")."
+			quest_desc = "Commission: Defeat Slimes (" + str(GameState.get_quest().slimes_killed) + "/" + str(GameState.get_quest().slimes_required) + ")."
 		3:
 			quest_desc = "Commission Completed! Report back to the Bulletin Board."
 		4:
@@ -245,7 +268,7 @@ func update_hud():
 		7:
 			quest_desc = "Caravan Escort Accepted! Head north through the plains gate to reach Stone Claw Pass."
 		8:
-			quest_desc = "Stone Claw Pass: Defeat Goblins (" + str(GameState.quest.goblins_killed) + "/" + str(GameState.quest.goblins_required) + ")."
+			quest_desc = "Stone Claw Pass: Defeat Goblins (" + str(GameState.get_quest().goblins_killed) + "/" + str(GameState.get_quest().goblins_required) + ")."
 		9:
 			quest_desc = "Escort Complete! Return to the guild to report."
 		10:
@@ -256,4 +279,52 @@ func update_hud():
 			quest_desc = "Return to Lina in the cabin and rest."
 		13:
 			quest_desc = "Free Play: Chapter 2 Complete! Explore Asterra."
+	
+	var active_side = GameState.get_active_side_quests()
+	if active_side.size() > 0:
+		quest_desc += "\n\n📋 Side Bounties:"
+		for sq in active_side:
+			var status = " (Ready to Turn In!)" if sq.current_qty >= sq.target_qty else " (" + str(sq.current_qty) + "/" + str(sq.target_qty) + ")"
+			quest_desc += "\n• " + sq.title + status
+
 	quest_label.text = quest_desc
+
+func show_region_banner(region_title: String):
+	var banner_panel = PanelContainer.new()
+	banner_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	banner_panel.position = Vector2(banner_panel.position.x - 140, 24)
+	banner_panel.custom_minimum_size = Vector2(280, 42)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.09, 0.13, 0.92)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 1
+	style.border_width_bottom = 1
+	style.border_color = Color("#ffd700")
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	style.content_margin_left = 16
+	style.content_margin_top = 8
+	style.content_margin_right = 16
+	style.content_margin_bottom = 8
+	banner_panel.add_theme_stylebox_override("panel", style)
+
+	var label = Label.new()
+	label.text = "📍  " + region_title
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 14)
+	label.modulate = Color("#ffd700")
+	banner_panel.add_child(label)
+
+	add_child(banner_panel)
+
+	banner_panel.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(banner_panel, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(2.0)
+	tween.tween_property(banner_panel, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(banner_panel.queue_free)
+

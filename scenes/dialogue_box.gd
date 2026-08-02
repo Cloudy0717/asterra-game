@@ -1,5 +1,6 @@
 extends CanvasLayer
 
+@warning_ignore("unused_signal")
 signal choice_selected(idx)
 
 var speaker_label: Label
@@ -12,6 +13,7 @@ var next_indicator: Label
 var current_steps = []
 var step_index = 0
 var current_callback
+var _dialogue_gen := 0
 
 var typing_text = ""
 var display_text = ""
@@ -19,6 +21,7 @@ var char_idx = 0
 var char_timer = 0.0
 
 func _ready():
+	layer = 20
 	setup_ui()
 	hide_box()
 	GameState.show_dialogue.connect(start_dialogue)
@@ -39,20 +42,9 @@ func setup_ui():
 	panel.custom_minimum_size = Vector2(650, 150)
 	panel.position = Vector2(75, 420)
 	root.add_child(panel)
-	
-	# Add a modern stylebox flat
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.12, 0.85)
-	style.border_width_left = 2
-	style.border_width_right = 2
-	style.border_width_top = 2
-	style.border_width_bottom = 2
-	style.border_color = Color("#8d6e63")
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_left = 10
-	style.corner_radius_bottom_right = 10
-	panel.add_theme_stylebox_override("panel", style)
+
+	var theme_res = load("res://theme/asterra_theme.tres")
+	panel.theme = theme_res
 	
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 16)
@@ -88,8 +80,8 @@ func setup_ui():
 
 	portrait_rect = TextureRect.new()
 	portrait_rect.custom_minimum_size = Vector2(80, 80)
-	portrait_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
-	portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	portrait_rect.visible = false
 	avatar_panel.add_child(portrait_rect)
 	
@@ -132,7 +124,7 @@ func _process(delta):
 	# Typewriter effect
 	if char_idx < typing_text.length():
 		char_timer += delta
-		var speed = float(GameState.settings.text_speed) / 1000.0
+		var speed = float(	GameState.get_settings().text_speed) / 1000.0
 		if speed <= 0.0:
 			# Instant
 			char_idx = typing_text.length()
@@ -146,8 +138,8 @@ func _process(delta):
 				on_text_complete()
 
 func start_dialogue(steps: Array, callback):
-	print("[DialogueBox] start_dialogue received! Steps count: ", steps.size())
 	GameState.play_sfx("talk")
+	_dialogue_gen += 1
 	current_steps = steps
 	step_index = 0
 	current_callback = callback
@@ -155,7 +147,6 @@ func start_dialogue(steps: Array, callback):
 	render_step()
 
 func render_step():
-	print("[DialogueBox] Rendering step: ", step_index)
 	if step_index >= current_steps.size():
 		close_dialogue()
 		return
@@ -198,8 +189,12 @@ func on_text_complete():
 				GameState.play_sfx("select")
 				# Run the choice action
 				var act = choice.get("action")
+				var gen_before = _dialogue_gen
 				if act is Callable:
 					act.call()
+				# Only advance if the action didn't start a new dialogue
+				if _dialogue_gen != gen_before:
+					return
 				# Advance step
 				step_index += 1
 				render_step()
@@ -235,9 +230,7 @@ func close_dialogue():
 	GameState.emit_signal("dialogue_ended")
 
 func show_box():
-	print("[DialogueBox] show_box() setting visible to true")
 	visible = true
 
 func hide_box():
-	print("[DialogueBox] hide_box() setting visible to false")
 	visible = false

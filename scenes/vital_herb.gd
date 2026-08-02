@@ -6,13 +6,14 @@ func _ready():
 	sprite.texture = Sprites.objects["vital_herb"]
 
 func collect():
-	GameState.play_sfx("equip")
+	GameState.play_sfx("heal")
+	GameState.progress_side_quest("vital_herb")
 	spawn_gather_particles()
 
 	var rng_herb = RandomNumberGenerator.new()
 	var heal = 15 + rng_herb.randi() % 6
-	var actual = min(heal, GameState.player.max_hp - GameState.player.hp)
-	GameState.player.hp = min(GameState.player.max_hp, GameState.player.hp + heal)
+	var actual = min(heal, GameState.get_player().max_hp - GameState.get_player().hp)
+	GameState.modify_hp(heal)
 
 	var steps = [
 		{ "speaker": "System", "avatar": "🌿", "text": "You consumed a Vital Herb on the spot! Restored [b]+" + str(actual) + " HP[/b]." }

@@ -1,0 +1,89 @@
+[gd_resource type="Theme" load_steps=12 format=3 uid="uid://bqogy2q0g54w7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.1, 0.1, 0.12, 0.95)
+border_width_left = 2
+border_width_right = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(0.553, 0.431, 0.388, 1.0)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+content_margin_left = 16
+content_margin_top = 16
+content_margin_right = 16
+content_margin_bottom = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+bg_color = Color(0.12, 0.12, 0.15, 0.8)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.365, 0.251, 0.259, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.18, 0.18, 0.22, 0.9)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.553, 0.431, 0.388, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pressed"]
+bg_color = Color(0.08, 0.08, 0.1, 0.95)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.243, 0.153, 0.137, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_disabled"]
+bg_color = Color(0.06, 0.06, 0.08, 0.5)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.216, 0.278, 0.31, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
+bg_color = Color(0.718, 0.11, 0.11, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mp_fill"]
+bg_color = Color(0.051, 0.282, 0.631, 1.0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
+bg_color = Color(0.06, 0.06, 0.08, 0.8)
+
+[resource]
+theme/panel_styles/panel = SubResource("StyleBoxFlat_panel")
+theme/button_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme/button_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme/button_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme/button_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+theme/progress_bar_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme/progress_bar_styles/fill = SubResource("StyleBoxFlat_bar_bg")
+theme/colors/gold = Color(1.0, 0.843, 0.0, 1.0)
+theme/colors/damage = Color(1.0, 0.322, 0.322, 1.0)
+theme/colors/heal = Color(0.412, 0.941, 0.682, 1.0)
+theme/colors/exp = Color(1.0, 0.843, 0.251, 1.0)
+theme/colors/system_text = Color(0.69, 0.745, 0.773, 1.0)
+theme/default_font_size = 11

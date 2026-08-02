@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "godot": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:\\Users\\Nitro v15\\Desktop\\AllProjectFromAI\\Asttera (godot)\\tools\\godot-mcp\\build\\index.js"
+      ],
+      "environment": {
+        "GODOT_PATH": "C:\\Users\\Nitro v15\\Desktop\\Godot_v4.7-stable_win64.exe"
+      },
+      "enabled": true
+    }
+  }
+}
