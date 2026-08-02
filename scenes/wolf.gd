@@ -75,6 +75,16 @@ func get_battle_config() -> Dictionary:
 		"attack":     attack,
 		"exp_reward": 50,
 		"gold_reward": 5,
-		"loot": [{ "id": "wolf_pelt", "name": "Wolf Pelt", "qty": 1 }],
+		"loot": [{
+			"id": "wolf_pelt",
+			"name": "Wolf Pelt",
+			"type": "material",
+			"icon": "🐺",
+			"desc": "Thick fur pelt from a wild wolf. Valuable crafting material and trade good.",
+			"effect": "Crafting Material / Trade Good",
+			"value": 15,
+			"qty": 1,
+			"equipped": false
+		}],
 		"type":       "wolf"
 	}

@@ -9,15 +9,7 @@ func collect():
 	GameState.play_sfx("equip")
 	spawn_gather_particles()
 	
-	# Add potion to inventory
-	var potion_item = null
-	for item in GameState.inventory:
-		if item.id == "health_potion":
-			potion_item = item
-			break
-			
-	if potion_item:
-		potion_item.qty += 1
+	GameState.add_item({"id": "health_potion", "type": "potion", "qty": 1})
 	
 	var steps = [
 		{ "speaker": "System", "avatar": "🌿", "text": "You collected a glowing Wild Herb! The materials can be brewed into a Health Potion (Potion quantity +1)." }

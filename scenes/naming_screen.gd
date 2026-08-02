@@ -24,19 +24,9 @@ func setup_ui():
 	panel.custom_minimum_size = Vector2(300, 160)
 	panel.position = Vector2(250, 220)
 	root.add_child(panel)
-	
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.12, 0.12, 0.14, 0.95)
-	style.border_width_left = 2
-	style.border_width_right = 2
-	style.border_width_top = 2
-	style.border_width_bottom = 2
-	style.border_color = Color("#8d6e63")
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_left = 8
-	style.corner_radius_bottom_right = 8
-	panel.add_theme_stylebox_override("panel", style)
+
+	var theme_res = load("res://theme/asterra_theme.tres")
+	panel.theme = theme_res
 	
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 16)
@@ -73,7 +63,7 @@ func setup_ui():
 func on_confirm():
 	var name_text = line_edit.text.strip_edges()
 	if name_text != "":
-		GameState.player.name = name_text
+		GameState.get_player().name = name_text
 	GameState.play_sfx("select")
 	hide_screen()
 	emit_signal("name_confirmed")

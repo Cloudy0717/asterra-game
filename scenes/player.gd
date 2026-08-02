@@ -41,7 +41,8 @@ func _physics_process(delta):
 		
 	if input_vector != Vector2.ZERO:
 		input_vector = input_vector.normalized()
-		var current_speed = SPRINT_SPEED if Input.is_key_pressed(KEY_CTRL) else WALK_SPEED
+		var is_sprinting = Input.is_key_pressed(KEY_SHIFT) or Input.is_key_pressed(KEY_CTRL)
+		var current_speed = SPRINT_SPEED if is_sprinting else WALK_SPEED
 		velocity = input_vector * current_speed
 		is_walking = true
 		
@@ -68,8 +69,8 @@ func update_sprite_frame():
 	match dir:
 		"down": row = 0
 		"up": row = 1
-		"left": row = 3
-		"right": row = 2
+		"left": row = 2
+		"right": row = 3
 	
 	var col = 0
 	if is_walking:

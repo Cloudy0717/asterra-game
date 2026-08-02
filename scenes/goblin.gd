@@ -72,6 +72,16 @@ func get_battle_config() -> Dictionary:
 		"attack":     attack,
 		"exp_reward": 40,
 		"gold_reward": 8,
-		"loot":       [{ "id": "goblin_ear", "name": "Goblin Ear", "qty": 1 }],
+		"loot":       [{
+			"id": "goblin_ear",
+			"name": "Goblin Ear",
+			"type": "material",
+			"icon": "👂",
+			"desc": "Pointed ear proof of defeating a goblin. Required for Mercenary Guild bounties.",
+			"effect": "Bounty Quest Item / Trade Good",
+			"value": 10,
+			"qty": 1,
+			"equipped": false
+		}],
 		"type":       "goblin"
 	}

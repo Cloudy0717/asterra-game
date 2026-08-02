@@ -4,6 +4,7 @@ extends Node2D
 
 var time = 0.0
 var flame_particles = []
+var light_node: PointLight2D
 
 func _ready():
 	z_index = 5
@@ -16,9 +17,17 @@ func _ready():
 			"phase": randf() * TAU,
 			"hue_shift": randf_range(0.0, 0.12)
 		})
+	
+	light_node = PointLight2D.new()
+	light_node.texture = Sprites.get_light_texture(120)
+	light_node.color = Color("#ffaa33")
+	light_node.energy = 1.3
+	add_child(light_node)
 
 func _process(delta):
 	time += delta
+	if is_instance_valid(light_node):
+		light_node.energy = 1.1 + 0.3 * sin(time * 5.0) + randf_range(-0.06, 0.06)
 	queue_redraw()
 
 func _draw():

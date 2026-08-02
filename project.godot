@@ -21,6 +21,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+Constants="*res://scripts/constants.gd"
 Audio="*res://scripts/audio.gd"
 GameState="*res://scripts/game_state.gd"
 Sprites="*res://scripts/sprites.gd"
@@ -30,6 +31,10 @@ Sprites="*res://scripts/sprites.gd"
 window/size/viewport_width=800
 window/size/viewport_height=600
 window/stretch/mode="canvas_items"
+
+[dotnet]
+
+project/assembly_name="Asterra"
 
 [input]
 
